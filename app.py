@@ -17,6 +17,10 @@ connection = psycopg2.connect(url)
 @app.get("/get-all-rounds")
 def get_all_rounds():
     rounds = []
+    data = {
+        "results": [],
+        "numberOfPlayers": 0
+    }
 
     try:
         with connection:
@@ -25,8 +29,20 @@ def get_all_rounds():
                 rounds = cursor.fetchall()
     except Exception as e:
         return jsonify({"error": "Internal Server Error", "message": f"ERROR: {e}"}), 500
+    
+    for round in rounds:
+        index, date, results = round
 
-    return jsonify({"message": "Rounds successfully fetched", "data": rounds}), 200
+        result = {
+            "index": index, "date": date, "playerOrder": results
+        }
+
+        data["results"].append(result)
+
+    _,_,players = rounds[0]
+    data["numberOfPlayers"] = len(players)
+
+    return jsonify({"message": "Rounds successfully fetched", "data": data}), 200
 
 @app.post("/add-new-round")
 def add_new_round():
