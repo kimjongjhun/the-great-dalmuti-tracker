@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import psycopg2
 from dotenv import load_dotenv
 
@@ -9,6 +10,7 @@ from pgsql import CREATE_ROUNDS_TABLE, GET_ALL_ROUNDS, INSERT_ROUND, DELETE_ROUN
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 url = os.getenv("DATABASE_URL")
 connection = psycopg2.connect(url)
 
