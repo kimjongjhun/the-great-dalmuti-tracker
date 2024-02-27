@@ -3,7 +3,7 @@ CREATE_ROUNDS_TABLE = (
 )
 
 GET_ALL_ROUNDS = (
-    "SELECT * FROM rounds order by id"
+    "SELECT * FROM rounds order by date"
 )
 
 INSERT_ROUND = (
