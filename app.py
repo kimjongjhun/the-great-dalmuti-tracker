@@ -30,19 +30,22 @@ def get_all_rounds():
     except Exception as e:
         return jsonify({"error": "Internal Server Error", "message": f"ERROR: {e}"}), 500
     
-    for round in rounds:
-        index, date, results = round
+    if len(rounds) > 0:
+        for round in rounds:
+            index, date, results = round
 
-        result = {
-            "index": index, "date": date, "playerOrder": results
-        }
+            result = {
+                "index": index, "date": date, "playerOrder": results
+            }
 
-        data["results"].append(result)
+            data["results"].append(result)
 
-    _,_,players = rounds[0]
-    data["numberOfPlayers"] = len(players)
+        _,_,players = rounds[0]
+        data["numberOfPlayers"] = len(players)
 
-    return jsonify({"message": "Rounds successfully fetched", "data": data}), 200
+        return jsonify({"message": "Rounds successfully fetched", "data": data}), 200
+    else:
+        return jsonify({"message": "No rounds to fetch", "data": data}), 200
 
 @app.post("/add-new-round")
 def add_new_round():
