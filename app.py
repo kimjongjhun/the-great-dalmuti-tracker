@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import psycopg2
 from dotenv import load_dotenv
 
@@ -9,12 +10,17 @@ from pgsql import CREATE_ROUNDS_TABLE, GET_ALL_ROUNDS, INSERT_ROUND, DELETE_ROUN
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 url = os.getenv("DATABASE_URL")
 connection = psycopg2.connect(url)
 
 @app.get("/get-all-rounds")
 def get_all_rounds():
     rounds = []
+    data = {
+        "results": [],
+        "numberOfPlayers": 0
+    }
 
     try:
         with connection:
@@ -23,8 +29,23 @@ def get_all_rounds():
                 rounds = cursor.fetchall()
     except Exception as e:
         return jsonify({"error": "Internal Server Error", "message": f"ERROR: {e}"}), 500
+    
+    if len(rounds) > 0:
+        for round in rounds:
+            index, date, results = round
 
-    return jsonify({"message": "Rounds successfully fetched", "data": rounds}), 200
+            result = {
+                "index": index, "date": date, "playerOrder": results
+            }
+
+            data["results"].append(result)
+
+        _,_,players = rounds[0]
+        data["numberOfPlayers"] = len(players)
+
+        return jsonify({"message": "Rounds successfully fetched", "data": data}), 200
+    else:
+        return jsonify({"message": "No rounds to fetch", "data": data}), 200
 
 @app.post("/add-new-round")
 def add_new_round():
