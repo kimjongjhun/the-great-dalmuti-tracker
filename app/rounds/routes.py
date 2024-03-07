@@ -1,21 +1,18 @@
 import os
 from datetime import datetime
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import psycopg2
+from flask import request, jsonify
 from dotenv import load_dotenv
+import psycopg2
 
+from app.rounds import rounds_bp
 from pgsql import CREATE_ROUNDS_TABLE, GET_ALL_ROUNDS, INSERT_ROUND, DELETE_ROUND, GET_ROUND_BY_ID, UPDATE_ROUND
 
 load_dotenv()
-
-app = Flask(__name__)
-CORS(app)
 url = os.getenv("DATABASE_URL")
 connection = psycopg2.connect(url)
 
-@app.get("/get-all-rounds")
-def get_all_rounds():
+@rounds_bp.get("/get-all")
+def get_all():
     rounds = []
     data = {
         "results": [],
@@ -47,8 +44,8 @@ def get_all_rounds():
     else:
         return jsonify({"message": "No rounds to fetch", "data": data}), 200
 
-@app.post("/add-new-round")
-def add_new_round():
+@rounds_bp.post("/add")
+def add():
     data = request.get_json()
     date = datetime.now().date() if not data.get('date') else data['date']
         
@@ -67,8 +64,8 @@ def add_new_round():
 
     return jsonify({"message": "Round saved successfully"}), 201
 
-@app.delete("/delete-round/<int:round_id>")
-def delete_round(round_id: int):
+@rounds_bp.delete("/delete/<int:round_id>")
+def delete(round_id: int):
     try:
         with connection:
             with connection.cursor() as cursor:
@@ -78,8 +75,8 @@ def delete_round(round_id: int):
 
     return jsonify({"message": "Round successfully deleted"}), 200
 
-@app.patch("/edit-round/<int:round_id>")
-def update_round(round_id: int):
+@rounds_bp.patch("/edit/<int:round_id>")
+def update(round_id: int):
     data = request.get_json()
     date = datetime.now().date() if not data.get('date') else data['date']
             
@@ -100,5 +97,3 @@ def update_round(round_id: int):
         return jsonify({"message": "Round successfully updated", "data": round}), 200
     except Exception as e:
         return jsonify({"error": "Internal Server Error", "message": f"ERROR: {e}"}), 500
-    
-        
